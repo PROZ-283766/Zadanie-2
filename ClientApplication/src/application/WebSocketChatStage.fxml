@@ -1,24 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane pickOnBounds="false" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.WebSocketChatStageControler">
+<AnchorPane pickOnBounds="false" prefHeight="334.0" prefWidth="365.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.WebSocketChatStageControler">
    <children>
-      <Button fx:id="btnSend" layoutX="311.0" layoutY="335.0" mnemonicParsing="false" onAction="#btnSend_Click" text="Send" />
+      <Button fx:id="btnSend" layoutX="306.0" layoutY="198.0" mnemonicParsing="false" onAction="#btnSend_Click" text="Send" />
       <Button fx:id="btnSet" layoutX="311.0" layoutY="28.0" mnemonicParsing="false" onAction="#btnSet_Click" text="Set" />
       <Label layoutX="20.0" layoutY="35.0" text="User:" />
       <Label layoutX="20.0" layoutY="152.0" text="Chat:" />
-      <Label layoutX="20.0" layoutY="337.0" prefHeight="18.0" prefWidth="68.0" text="Message:" />
-      <TextField fx:id="userTextField" layoutX="78.0" layoutY="32.0" prefHeight="26.0" prefWidth="223.0" />
-      <TextField fx:id="messageTextField" layoutX="78.0" layoutY="334.0" prefHeight="26.0" prefWidth="223.0" />
-      <TextArea fx:id="chatTextArea" editable="false" layoutX="78.0" layoutY="63.0" prefHeight="218.0" prefWidth="223.0" wrapText="true" AnchorPane.bottomAnchor="79.0" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="53.0" AnchorPane.topAnchor="63.0">
+      <Label layoutX="13.0" layoutY="201.0" prefHeight="18.0" prefWidth="68.0" text="Message:" />
+      <TextField fx:id="userTextField" layoutX="78.0" layoutY="32.0" prefHeight="26.0" prefWidth="223.0" promptText="Insert username" />
+      <TextField fx:id="messageTextField" layoutX="78.0" layoutY="197.0" onKeyReleased="#keyEntered" prefHeight="26.0" prefWidth="223.0">
+         <cursor>
+            <Cursor fx:constant="TEXT" />
+         </cursor></TextField>
+      <TextArea fx:id="chatTextArea" editable="false" layoutX="78.0" layoutY="63.0" prefHeight="124.0" prefWidth="223.0" wrapText="true">
          <font>
             <Font size="11.0" />
          </font></TextArea>
+      <Button fx:id="btnAttach" layoutX="302.0" layoutY="244.0" mnemonicParsing="false" onAction="#btnAttach_Click" text="Attach" />
+      <ListView fx:id="attach_ListView" layoutX="78.0" layoutY="234.0" prefHeight="70.0" prefWidth="223.0" />
+      <Button fx:id="btnSendAttachment" layoutX="306.0" layoutY="279.0" mnemonicParsing="false" onAction="#btnSendAttachment_Click" text="Send" />
    </children>
 </AnchorPane>
