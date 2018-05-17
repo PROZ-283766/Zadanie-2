@@ -28,5 +28,6 @@
       <Button fx:id="btnAttach" layoutX="302.0" layoutY="244.0" mnemonicParsing="false" onAction="#btnAttach_Click" text="Attach" />
       <ListView fx:id="attach_ListView" layoutX="78.0" layoutY="234.0" prefHeight="70.0" prefWidth="223.0" />
       <Button fx:id="btnSendAttachment" layoutX="306.0" layoutY="279.0" mnemonicParsing="false" onAction="#btnSendAttachment_Click" text="Send" />
+      <Button fx:id="btnSDD" layoutX="21.0" layoutY="244.0" mnemonicParsing="false" onAction="#btnSDD_Click" text="SDD" />
    </children>
 </AnchorPane>

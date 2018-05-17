@@ -1,7 +1,11 @@
 package application;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 
 import javax.websocket.ClientEndpoint;
@@ -22,6 +26,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class WebSocketChatStageControler {
@@ -40,9 +45,12 @@ public class WebSocketChatStageControler {
 	@FXML
 	Button btnSendAttachment;
 	@FXML
-	ListView<String> attach_ListView;
+	Button btnSDD;
+	@FXML
+	ListView<File> attach_ListView;
 	private String user;
 	private WebSocketClient webSocketClient;
+	File selectedDirectory;
 
 	@FXML
 	private void initialize() {
@@ -91,10 +99,12 @@ public class WebSocketChatStageControler {
 		File selectedFile = fileChooser.showOpenDialog(null);
 		if (selectedFile != null) {
 			System.out.println(selectedFile);
-			webSocketClient.attach(selectedFile.getPath());
+			attach_ListView.getItems().add(selectedFile);
+			System.out.println("Sth was attached: " + selectedFile.getPath());
 		}
 		if (btnSendAttachment.isDisable() && !attach_ListView.getItems().isEmpty()) {
 			btnSendAttachment.setDisable(false);
+			//btnAttach.setDisable(true);
 		}
 	}
 
@@ -104,6 +114,15 @@ public class WebSocketChatStageControler {
 		webSocketClient.sendFiles();
 
 		attach_ListView.getItems().clear();
+		btnSendAttachment.setDisable(true);
+		//btnAttach.setDisable(false);
+	}
+
+	@FXML
+	private void btnSDD_Click() {
+		DirectoryChooser directoryChooser = new DirectoryChooser();
+		selectedDirectory = directoryChooser.showDialog(null);
+		System.out.println(" :) " + selectedDirectory);
 	}
 
 	public void closeSession(CloseReason closeReason) {
@@ -145,10 +164,35 @@ public class WebSocketChatStageControler {
 			chatTextArea.setText(chatTextArea.getText() + message + "\n");
 		}
 
+		@OnMessage
+		public void onMessage(ByteBuffer message, Session session) {
+			if(selectedDirectory==null)
+				return;
+			int length=message.getInt();
+			String name="";
+			for(int i=0;i!=length;++i) {
+				name+=(char)message.get();
+			}
+			int lengthOfFile=message.getInt();
+			System.out.println("File was received "+length + " " + name+ " " + lengthOfFile);
+			System.out.println(selectedDirectory.toString() + "\\" + name);
+			File file = new File(selectedDirectory.toString() + "\\" + name);
+			try {
+				FileOutputStream ostream = new FileOutputStream(file, false);
+				byte[] hej=new byte[lengthOfFile];
+				message.get(hej, 0, lengthOfFile);
+				ostream.write(hej, 0, lengthOfFile);
+				ostream.flush();
+				ostream.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
 		private void connectToWebSocket() {
 			WebSocketContainer webSocketContainer = ContainerProvider.getWebSocketContainer();
 			try {
-				URI uri = URI.create("ws://localhost:8080/WebServer/websocketendpoint");
+				URI uri = URI.create("ws://localhost:9090/WebServer/websocketendpoint");
 				webSocketContainer.connectToServer(this, uri);
 			} catch (DeploymentException | IOException e) {
 				e.printStackTrace();
@@ -165,17 +209,32 @@ public class WebSocketChatStageControler {
 			}
 		}
 
-		public void attach(String message) {
-			System.out.println("Sth was attached: " + message);
-			attach_ListView.getItems().add(message);
-		}
-
 		public void sendFiles() {
 			try {
-				attach_ListView.getItems().size();
+				// attach_ListView.getItems().size();
 				for (int i = 0; i != attach_ListView.getItems().size(); ++i) {
 					System.out.println(user + " send: " + attach_ListView.getItems().get(i).toString());
-					session.getBasicRemote().sendText(user + ": " + attach_ListView.getItems().get(i));
+					session.getBasicRemote().sendText(user + ": " + attach_ListView.getItems().get(i).getName());
+					InputStream is = new FileInputStream(attach_ListView.getItems().get(i));
+
+					int length = attach_ListView.getItems().get(i).getName().length();
+					ByteBuffer bufor = ByteBuffer.allocateDirect((int) attach_ListView.getItems().get(i).length()+8+length);//+4 for each int
+					bufor.putInt(length);
+					String fileName=attach_ListView.getItems().get(i).getName();
+					for(int j=0;j!=length;++j) {
+						bufor.put((byte)fileName.charAt(j));
+					}
+					long lengthOfFile=attach_ListView.getItems().get(i).length();
+					int sizeOfInputStream=is.available();
+					bufor.putInt(sizeOfInputStream);
+					System.out.println(length+ "        "+lengthOfFile+ "        "+sizeOfInputStream);
+					byte[] byteArray=new byte[sizeOfInputStream];
+					is.read(byteArray, 0, sizeOfInputStream);
+					bufor.put(byteArray);
+					is.close();
+
+					bufor.flip();
+					session.getBasicRemote().sendBinary(bufor);
 				}
 
 			} catch (IOException ex) {
